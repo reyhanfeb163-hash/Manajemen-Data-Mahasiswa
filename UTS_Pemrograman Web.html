@@ -1,0 +1,663 @@
+<!-- 
+  ========================================================
+  UTS PEMROGRAMAN WEB
+  TEMA: SISTEM MANAJEMEN DATA MAHASISWA
+  ========================================================
+-->
+
+<!-- Mendefinisikan bahwa dokumen ini menggunakan standar HTML5 -->
+<!DOCTYPE html>
+<!-- Tag pembuka HTML, atribut lang="id" memberitahu browser bahwa konten berbahasa Indonesia -->
+<html lang="id">
+<head>
+    <!-- Mendukung semua karakter teks dan simbol (standar encoding) -->
+    <meta charset="UTF-8">
+    <!-- WAJIB UNTUK RESPONSIVE: Memastikan skala web menyesuaikan ukuran layar HP/Perangkat -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Judul yang akan tampil di tab browser -->
+    <title>Sistem Manajemen Mahasiswa</title>
+    
+    <!-- Bagian CSS: Murni tanpa Framework (Tanpa Bootstrap/Tailwind) -->
+    <style>
+        /* 
+         * FITUR TAMBAHAN 1: DARK MODE / LIGHT MODE
+         * :root adalah tempat menyimpan Variabel CSS. Ini adalah warna untuk tema terang (Light)
+         */
+        :root {
+            --bg-color: #f4f7f6;        /* Warna background utama (abu-abu terang) */
+            --text-color: #333;         /* Warna teks gelap */
+            --card-bg: #ffffff;         /* Warna background kotak/kartu (putih) */
+            --primary-color: #4361ee;   /* Warna biru utama (tombol simpan) */
+            --primary-hover: #3a53d0;   /* Warna biru saat tombol di-hover/disorot */
+            --danger-color: #ef233c;    /* Warna merah (tombol hapus) */
+            --warning-color: #ffb703;   /* Warna kuning (tombol edit) */
+            --border-color: #e0e0e0;    /* Warna garis tepi */
+            --input-bg: #ffffff;        /* Warna background kotak input */
+            --table-header: #f8f9fa;    /* Warna header tabel */
+        }
+
+        /* 
+         * Jika tag HTML memiliki atribut data-theme="dark", 
+         * variabel warna di atas akan DITIMPA dengan warna gelap ini.
+         */
+        [data-theme="dark"] {
+            --bg-color: #121212;        /* Background utama menjadi hitam */
+            --text-color: #e0e0e0;      /* Teks menjadi terang/putih */
+            --card-bg: #1e1e1e;         /* Kotak/kartu menjadi abu-abu gelap */
+            --primary-color: #bb86fc;   /* Warna utama menyesuaikan dark mode */
+            --primary-hover: #9b5de5;
+            --danger-color: #cf6679;
+            --warning-color: #ffb703;
+            --border-color: #333333;
+            --input-bg: #2c2c2c;
+            --table-header: #2c2c2c;
+        }
+
+        /* Reset margin dan padding default dari browser untuk semua elemen (*) */
+        * {
+            box-sizing: border-box; /* Memastikan padding tidak merusak ukuran lebar (width) elemen */
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font yang digunakan */
+            transition: background-color 0.3s, color 0.3s; /* Efek transisi halus saat ganti Dark/Light mode */
+        }
+
+        /* Style untuk seluruh body halaman */
+        body {
+            background-color: var(--bg-color); /* Menggunakan variabel warna */
+            color: var(--text-color);
+            line-height: 1.6; /* Jarak antar baris teks */
+            padding: 20px; /* Jarak halaman dengan tepi browser */
+        }
+
+        /* Style untuk bagian header (Kop atas) */
+        header {
+            display: flex; /* Menggunakan Flexbox untuk mensejajarkan judul dan tombol */
+            justify-content: space-between; /* Judul di kiri, Tombol di kanan */
+            align-items: center; /* Meratakan elemen secara vertikal di tengah */
+            max-width: 1200px; /* Lebar maksimal konten */
+            margin: 0 auto 30px auto; /* Membuat header berada di tengah layar (auto) */
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            border-radius: 10px; /* Membuat sudut header melengkung */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Memberikan efek bayangan lembut */
+        }
+
+        h1 { font-size: 1.5rem; color: var(--primary-color); } /* Style Judul */
+
+        /* Style tombol ganti tema (Dark Mode) */
+        .theme-toggle {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer; /* Ubah kursor jadi tangan saat disorot */
+            font-weight: bold;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--primary-color); /* Berubah warna saat disorot */
+            color: var(--card-bg);
+        }
+
+        /* Container utama yang membungkus Form dan Tabel */
+        .container {
+            display: flex; /* Bersebelahan secara horizontal */
+            gap: 20px; /* Jarak antara form dan tabel */
+            max-width: 1200px;
+            margin: 0 auto; /* Posisi di tengah layar */
+        }
+
+        /* 
+         * MEDIA QUERY: DESAIN RESPONSIVE
+         * Jika lebar layar <= 850px (seperti di HP/Tablet), 
+         * ubah tata letak Flexbox menjadi bertumpuk (column).
+         */
+        @media (max-width: 850px) {
+            .container { flex-direction: column; }
+        }
+
+        /* Base class untuk kotak putih (Form dan Tabel) */
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            width: 100%;
+        }
+
+        /* Mengatur proporsi lebar Form (Kiri) */
+        .form-section {
+            flex: 1; /* Mengambil 1 bagian ruang */
+            max-width: 400px; /* Maksimal lebar form 400px */
+        }
+
+        /* Saat di layar HP, Form mengambil 100% lebar layar */
+        @media (max-width: 850px) {
+            .form-section { max-width: 100%; }
+        }
+
+        /* Mengatur proporsi lebar Tabel (Kanan) */
+        .data-section { flex: 2; } /* Mengambil 2 bagian ruang (Lebih lebar dari form) */
+
+        /* Style untuk setiap kelompok label dan input di form */
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block; /* Agar label berada di atas input */
+            margin-bottom: 5px;
+            font-weight: 600; /* Teks tebal */
+        }
+
+        /* Style global untuk input text, dropdown (select), dan area teks */
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; /* Memenuhi lebar kontainer form */
+            padding: 10px; /* Jarak dalam input */
+            border: 1px solid var(--border-color); /* Garis tepi */
+            border-radius: 6px; /* Sudut melengkung */
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none; /* Menghilangkan border default browser saat diklik */
+        }
+
+        /* Efek saat input sedang aktif diketik */
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Style dasar tombol */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            width: 100%; /* Default tombol form penuhi lebar penuh */
+        }
+
+        /* Variasi warna tombol */
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: #000;
+            width: auto; /* Lebar tombol menyesuaikan teks (untuk tombol di dalam tabel) */
+            padding: 5px 10px;
+            margin-right: 5px;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            width: auto;
+            padding: 5px 10px;
+        }
+
+        /* Bagian judul tabel dan kotak pencarian */
+        .toolbar {
+            display: flex;
+            justify-content: space-between; /* Judul kiri, Pencarian kanan */
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        /* Kotak pencarian */
+        .search-box {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 250px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        /* Agar tabel bisa digeser ke kanan-kiri (scroll) jika di layar kecil */
+        .table-responsive { overflow-x: auto; }
+
+        /* Style tabel */
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Menghilangkan jarak antar border sel */
+            margin-bottom: 15px;
+        }
+
+        /* Style Header (th) dan Isi Tabel (td) */
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color); /* Garis pemisah antar baris */
+        }
+
+        th {
+            background-color: var(--table-header);
+            font-weight: 600;
+            cursor: pointer; /* Indikator bahwa Header bisa di-klik untuk Sorting (Fitur Tambahan) */
+        }
+        th:hover { opacity: 0.8; } /* Efek hover pada header tabel */
+
+        .sort-icon { font-size: 0.8em; margin-left: 5px; } /* Ikon panah sorting */
+
+        /* Area tombol Pagination (Bawah tabel) */
+        .pagination {
+            display: flex;
+            justify-content: center; /* Posisi di tengah */
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Tombol Prev dan Next */
+        .page-btn {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Tombol nonaktif (misal tombol Prev saat di halaman 1) */
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Kotak Notifikasi (Alert Success/Error) */
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none; /* Disembunyikan secara default */
+            font-weight: bold;
+        }
+        /* Pewarnaan Alert saat terang dan gelap */
+        .alert-danger { background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000;}
+        .alert-success { background-color: #ccffcc; color: #006600; border: 1px solid #006600;}
+        [data-theme="dark"] .alert-danger { background-color: #4a0000; color: #ffcccc; }
+        [data-theme="dark"] .alert-success { background-color: #003300; color: #ccffcc; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Sistem Akademik</h1>
+        <!-- Tombol untuk memanggil fungsi JavaScript toggleTheme() -->
+        <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">☀️ Mode Terang</button>
+    </header>
+
+    <div class="container">
+        <!-- ================= PANEL KIRI: FORM INPUT (CREATE & UPDATE) ================= -->
+        <div class="card form-section">
+            <h2 id="formTitle" style="margin-bottom: 15px;">Tambah Mahasiswa</h2>
+            
+            <!-- Tempat menampilkan pesan error atau sukses -->
+            <div id="alertBox" class="alert"></div>
+            
+            <!-- Saat tombol submit ditekan, jalankan fungsi JS handleFormSubmit() -->
+            <form id="studentForm" onsubmit="handleFormSubmit(event)">
+                
+                <!-- INPUT RAHASIA: Sangat penting! 
+                     Jika valuenya "-1", berarti mode TAMBAH DATA BARU.
+                     Jika valuenya angka lain (0, 1, 2...), berarti mode EDIT DATA di urutan tersebut. -->
+                <input type="hidden" id="editIndex" value="-1">
+                
+                <!-- Input NIM (Wajib diisi -> required) -->
+                <div class="form-group">
+                    <label for="nim">NIM</label>
+                    <input type="text" id="nim" required placeholder="Masukkan NIM">
+                </div>
+                
+                <!-- Input Nama -->
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap</label>
+                    <input type="text" id="nama" required placeholder="Masukkan Nama Lengkap">
+                </div>
+                
+                <!-- Input Alamat (Textarea untuk teks panjang) -->
+                <div class="form-group">
+                    <label for="alamat">Alamat</label>
+                    <textarea id="alamat" rows="3" required placeholder="Masukkan Alamat"></textarea>
+                </div>
+                
+                <!-- Input Jenis Kelamin (Dropdown/Select) -->
+                <div class="form-group">
+                    <label for="gender">Jenis Kelamin</label>
+                    <select id="gender" required>
+                        <option value="">-- Pilih --</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+                
+                <!-- Input Password -->
+                <div class="form-group">
+                    <label for="password">Password Sistem</label>
+                    <input type="password" id="password" required placeholder="Masukkan Password">
+                </div>
+                
+                <!-- Tombol Submit Form -->
+                <button type="submit" class="btn btn-primary" id="submitBtn">Simpan Data</button>
+                
+                <!-- Tombol Batal Edit (Awalnya disembunyikan, muncul hanya saat mode Edit) -->
+                <button type="button" class="btn" style="background: var(--border-color); color: var(--text-color); margin-top: 10px; display: none;" id="cancelBtn" onclick="resetForm()">Batal Edit</button>
+            </form>
+        </div>
+
+        <!-- ================= PANEL KANAN: TABEL DATA (READ, DELETE, SEARCH) ================= -->
+        <div class="card data-section">
+            <div class="toolbar">
+                <h2>Data Mahasiswa</h2>
+                <!-- FITUR PENCARIAN (SEARCH): Saat mengetik (onkeyup), panggil fungsi handleSearch() -->
+                <input type="text" id="searchInput" class="search-box" placeholder="Cari NIM atau Nama..." onkeyup="handleSearch()">
+            </div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <!-- FITUR TAMBAHAN 2: SORTING (Klik header untuk mengurutkan) -->
+                            <th onclick="handleSort('nim')">NIM <span class="sort-icon" id="sort-nim">↕️</span></th>
+                            <th onclick="handleSort('nama')">Nama Mahasiswa <span class="sort-icon" id="sort-nama">↕️</span></th>
+                            <th>Jenis Kelamin</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <!-- Wadah kosong (tbody) ini akan diisi secara otomatis oleh JavaScript -->
+                    <tbody id="tableBody">
+                        <!-- Data akan di-render di sini via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FITUR PAGINATION (Pembatas halaman) -->
+            <div class="pagination">
+                <!-- Tombol mundur (-1) -->
+                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">&#8592; Prev</button>
+                <!-- Informasi halaman (misal: Halaman 1 dari 3) -->
+                <span id="pageInfo">Halaman 1 dari 1</span>
+                <!-- Tombol maju (1) -->
+                <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next &#8594;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= LOGIKA JAVASCRIPT ================= -->
+    <script>
+        /* 
+         * 1. STATE MANAGEMENT (Menyiapkan memori penyimpanan)
+         * Mengambil data dari localStorage (memori browser).
+         * JSON.parse() mengubah data string (teks) kembali menjadi Array Objek.
+         * Jika kosong (pertama buka web), atur jadi Array Kosong [].
+         */
+        let students = JSON.parse(localStorage.getItem('mahasiswaData')) || [];
+        
+        // Variabel untuk fitur Pagination
+        let currentPage = 1;      // Halaman saat ini yang dibuka
+        const rowsPerPage = 5;    // Maksimal 5 data per halaman
+        
+        // Variabel untuk fitur Pencarian dan Sorting
+        let searchQuery = '';     // Menyimpan kata kunci pencarian
+        let sortColumn = '';      // Menyimpan kolom yang sedang diurutkan ('nim' atau 'nama')
+        let sortAscending = true; // Arah urutan: true (A-Z), false (Z-A)
+
+        /* 
+         * 2. LOGIKA FITUR TAMBAHAN 1: DARK MODE
+         */
+        // Fungsi dijalankan awal untuk mengecek apakah user sebelumnya pakai mode gelap
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme); // Suntik atribut ke tag HTML
+            updateThemeButton(savedTheme); // Ubah teks tombol
+        }
+
+        // Fungsi saat tombol ganti tema di-klik
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark'; // Balik status (toggle)
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme); // Simpan pilihan ke browser
+            updateThemeButton(newTheme);
+        }
+
+        // Merubah teks pada tombol tema
+        function updateThemeButton(theme) {
+            const btn = document.getElementById('themeToggleBtn');
+            btn.innerHTML = theme === 'dark' ? '🌙 Mode Gelap' : '☀️ Mode Terang';
+        }
+
+        /* 
+         * 3. LOGIKA FITUR CREATE & UPDATE (Simpan Data)
+         */
+        function handleFormSubmit(e) {
+            e.preventDefault(); // Mencegah halaman refresh otomatis (sifat asli form HTML)
+            
+            // Ambil semua nilai yang diketik user dari form
+            const nim = document.getElementById('nim').value.trim();
+            const nama = document.getElementById('nama').value.trim();
+            const alamat = document.getElementById('alamat').value.trim();
+            const gender = document.getElementById('gender').value;
+            const password = document.getElementById('password').value;
+            const editIndex = document.getElementById('editIndex').value; // Ambil nilai rahasia (-1 atau angka index)
+
+            // FITUR PERBAIKAN BUG: Validasi NIM tidak boleh ganda (Primary Key)
+            if (editIndex === "-1") {
+                // Mode Tambah: Cek semua array, adakah nim yang sama? (.some akan mengembalikan true jika ada)
+                const isDuplicate = students.some(mhs => mhs.nim === nim);
+                if (isDuplicate) {
+                    showAlert('NIM sudah terdaftar di sistem!', 'danger');
+                    return; // Hentikan fungsi, jangan simpan data
+                }
+            } else {
+                // Mode Edit: Pastikan NIM yang diedit tidak bertabrakan dengan milik orang lain
+                const isDuplicate = students.some((mhs, idx) => mhs.nim === nim && idx.toString() !== editIndex);
+                if (isDuplicate) {
+                    showAlert('NIM sudah digunakan oleh mahasiswa lain!', 'danger');
+                    return;
+                }
+            }
+
+            // Bungkus data menjadi satu Objek
+            const studentData = { nim, nama, alamat, gender, password };
+
+            // Logika Penyimpanan
+            if (editIndex === "-1") {
+                // Jika -1, masukkan data ke bagian akhir array (CREATE)
+                students.push(studentData);
+                showAlert('Data mahasiswa berhasil ditambahkan!', 'success');
+            } else {
+                // Jika bukan -1, timpa data array pada nomor urut (editIndex) tersebut (UPDATE)
+                students[editIndex] = studentData;
+                showAlert('Data mahasiswa berhasil diperbarui!', 'success');
+            }
+
+            saveData();   // Simpan array terbaru ke Local Storage
+            resetForm();  // Bersihkan form inputan
+            renderTable();// Refresh tampilan tabel
+        }
+
+        /* 
+         * 4. FUNGSI PENYIMPANAN LOCAL STORAGE
+         * JSON.stringify() mengubah Array Objek kembali menjadi string teks 
+         * karena localStorage hanya bisa menyimpan teks.
+         */
+        function saveData() {
+            localStorage.setItem('mahasiswaData', JSON.stringify(students));
+        }
+
+        /* 
+         * 5. LOGIKA READ, SEARCH, SORT, DAN PAGINATION (Menampilkan Data)
+         * Ini adalah fungsi yang bertugas menggambar/merender baris tabel.
+         */
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ''; // Kosongkan isi tabel sebelum diisi ulang
+
+            // --- PROSES 1: FILTERING (Pencarian) ---
+            let filteredData = students.filter(mhs => {
+                // Loloskan data jika NIM atau NAMA mengandung kata kunci pencarian (hiraukan huruf besar/kecil)
+                return mhs.nim.toLowerCase().includes(searchQuery) || 
+                       mhs.nama.toLowerCase().includes(searchQuery);
+            });
+
+            // --- PROSES 2: SORTING (Pengurutan) - Fitur Tambahan 2 ---
+            if (sortColumn) {
+                filteredData.sort((a, b) => {
+                    let valA = a[sortColumn].toLowerCase();
+                    let valB = b[sortColumn].toLowerCase();
+                    
+                    // Bandingkan nilai untuk diurutkan A-Z atau Z-A
+                    if (valA < valB) return sortAscending ? -1 : 1;
+                    if (valA > valB) return sortAscending ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            // --- PROSES 3: PAGINATION (Memotong data) ---
+            // Hitung total halaman (Misal data ada 12, dibagi 5 = 2.4, dibulatkan ke atas jadi 3 halaman)
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+            
+            // Bug Fix Pagination: Jika sedang di hal 3, lalu datanya dihapus semua, paksa kembali ke hal terakhir yang ada
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            // Logika matematika pemotongan Array (Misal Hal 1: index 0 s/d 5. Hal 2: index 5 s/d 10)
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const endIdx = startIdx + rowsPerPage;
+            const paginatedData = filteredData.slice(startIdx, endIdx); // Data terpotong khusus untuk 1 halaman ini
+
+            // --- PROSES 4: RENDER KE HTML ---
+            if (paginatedData.length === 0) {
+                // Jika array kosong / tidak ada hasil pencarian
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Data tidak ditemukan</td></tr>`;
+            } else {
+                // Perulangan untuk membuat tag <tr> dan <td> sebanyak jumlah data di halaman ini
+                paginatedData.forEach((mhs, index) => {
+                    
+                    // PENTING: Karena array sudah difilter/disortir, urutannya berubah. 
+                    // Kita harus cari urutan/indeks asli data ini di database utama (students) untuk fitur Edit/Delete.
+                    const originalIndex = students.findIndex(s => s.nim === mhs.nim);
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${startIdx + index + 1}</td> <!-- Penomoran dinamis -->
+                        <td>${mhs.nim}</td>
+                        <td>${mhs.nama}</td>
+                        <td>${mhs.gender}</td>
+                        <td>
+                            <!-- Tombol Edit & Hapus mengirim 'originalIndex' sebagai parameter -->
+                            <button class="btn btn-warning" onclick="editStudent(${originalIndex})">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteStudent(${originalIndex})">Hapus</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr); // Masukkan baris ke dalam tabel HTML
+                });
+            }
+
+            // --- UPDATE UI TOMBOL PAGINATION DAN ICON SORTING ---
+            document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1; // Nonaktifkan prev jika di awal
+            document.getElementById('nextBtn').disabled = currentPage === totalPages; // Nonaktifkan next jika di akhir
+            
+            // Ganti arah ikon panah di header tabel
+            document.getElementById('sort-nim').innerText = sortColumn === 'nim' ? (sortAscending ? '🔼' : '🔽') : '↕️';
+            document.getElementById('sort-nama').innerText = sortColumn === 'nama' ? (sortAscending ? '🔼' : '🔽') : '↕️';
+        }
+
+        /* 
+         * 6. LOGIKA PERSIAPAN EDIT DATA
+         * Dipanggil saat tombol "Edit" tabel di-klik.
+         */
+        function editStudent(index) {
+            const mhs = students[index]; // Ambil data spesifik
+            // Isikan data tersebut ke kotak-kotak form HTML
+            document.getElementById('nim').value = mhs.nim;
+            document.getElementById('nama').value = mhs.nama;
+            document.getElementById('alamat').value = mhs.alamat;
+            document.getElementById('gender').value = mhs.gender;
+            document.getElementById('password').value = mhs.password;
+            
+            // UBAH NILAI RAHASIA form menjadi index data ini (Berpindah ke Mode Edit)
+            document.getElementById('editIndex').value = index;
+            document.getElementById('formTitle').innerText = "Edit Mahasiswa";
+            document.getElementById('submitBtn').innerText = "Update Data";
+            document.getElementById('cancelBtn').style.display = "inline-block"; // Tampilkan tombol batal
+            
+            // Otomatis scroll layar ke bagian atas (tempat form berada)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* 
+         * 7. LOGIKA DELETE (Menghapus Data)
+         */
+        function deleteStudent(index) {
+            // Tampilkan pop up konfirmasi bawaan browser
+            const konfirmasi = confirm("Apakah Anda yakin ingin menghapus data ini?");
+            if (konfirmasi) {
+                // Hapus 1 data dari array dimulai dari posisi 'index'
+                students.splice(index, 1);
+                saveData(); // Simpan array baru ke memori
+                showAlert('Data mahasiswa berhasil dihapus!', 'success');
+                renderTable(); // Segarkan tabel
+            }
+        }
+
+        /* 
+         * 8. FUNGSI PEMBANTU (HELPERS)
+         */
+        
+        // Membersihkan form dan mengembalikan ke Mode Tambah (-1)
+        function resetForm() {
+            document.getElementById('studentForm').reset(); // Kosongkan input
+            document.getElementById('editIndex').value = "-1"; // Kembali ke mode Create
+            document.getElementById('formTitle').innerText = "Tambah Mahasiswa";
+            document.getElementById('submitBtn').innerText = "Simpan Data";
+            document.getElementById('cancelBtn').style.display = "none"; // Sembunyikan tombol batal
+        }
+
+        // Pemicu saat kotak pencarian diketik
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            currentPage = 1; // Paksa kembali ke halaman 1 agar hasil cari terlihat
+            renderTable();
+        }
+
+        // Pemicu saat header tabel di-klik untuk mengurutkan
+        function handleSort(column) {
+            if (sortColumn === column) {
+                sortAscending = !sortAscending; // Jika kolom sama, balikkan urutan (Z-A menjadi A-Z)
+            } else {
+                sortColumn = column; // Ganti patokan kolom
+                sortAscending = true;
+            }
+            renderTable();
+        }
+
+        // Pemicu pindah halaman (direction berisi angka 1 untuk maju, -1 untuk mundur)
+        function changePage(direction) {
+            currentPage += direction; 
+            renderTable();
+        }
+
+        // Fungsi membuat notifikasi kotak hijau/merah di atas form
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerText = message;
+            alertBox.className = `alert alert-${type}`; // Atur warna CSS berdasarkan type
+            alertBox.style.display = 'block'; // Tampilkan kotak
+            
+            // Fungsi timer: Sembunyikan otomatis setelah 3000 ms (3 detik)
+            setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+        }
+
+        /* 
+         * 9. INISIALISASI AWAL (Saat web baru dibuka / di-refresh)
+         * window.onload memastikan semua HTML selesai di-load sebelum JS berjalan.
+         */
+        window.onload = () => {
+            initTheme();    // Setel tema gelap/terang
+            renderTable();  // Langsung tampilkan isi tabel dari Local Storage
+        };
+    </script>
+</body>
+</html>
